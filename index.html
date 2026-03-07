@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz · Metrología Biomédica</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B2545;
+    --blue: #1368AA;
+    --teal: #14967F;
+    --light: #EAF4FB;
+    --white: #FFFFFF;
+    --gray: #5A6A7A;
+    --lgray: #C8D8E8;
+    --yellow: #F5A623;
+    --red: #E63946;
+    --green: #2DC653;
+    --cream: #F4F8FC;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--navy);
+    min-height: 100vh;
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* Background pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 10% 20%, rgba(19,104,170,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 90% 80%, rgba(20,150,127,0.15) 0%, transparent 55%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  /* ── HEADER ── */
+  header {
+    text-align: center;
+    margin-bottom: 2.8rem;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--teal);
+    border: 1px solid rgba(20,150,127,0.4);
+    padding: 0.35rem 1rem;
+    border-radius: 2rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 2.9rem);
+    font-weight: 400;
+    color: var(--white);
+    line-height: 1.15;
+    margin-bottom: 0.6rem;
+  }
+
+  header h1 em {
+    color: var(--teal);
+    font-style: italic;
+  }
+
+  header p {
+    color: var(--lgray);
+    font-size: 0.95rem;
+    font-weight: 300;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    animation: fadeDown 0.7s 0.15s ease both;
+  }
+
+  .progress-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--teal));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+
+  .progress-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--lgray);
+    white-space: nowrap;
+  }
+
+  /* ── SCORE STRIP ── */
+  .score-strip {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 1.8rem;
+    animation: fadeDown 0.7s 0.25s ease both;
+  }
+
+  .score-chip {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.7rem 0.5rem;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    gap: 0.2rem;
+  }
+
+  .score-chip .num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  .score-chip .lbl {
+    font-size: 0.7rem;
+    color: var(--lgray);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .score-chip.correct .num { color: var(--green); }
+  .score-chip.wrong  .num { color: var(--red); }
+  .score-chip.total  .num { color: var(--teal); }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.5rem;
+  }
+
+  .section-label .icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .section-label h2 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--lgray);
+  }
+
+  /* ── QUESTION CARD ── */
+  .question-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 18px;
+    padding: 1.8rem 2rem;
+    margin-bottom: 1.2rem;
+    transition: border-color 0.3s;
+    animation: slideUp 0.45s ease both;
+    backdrop-filter: blur(8px);
+  }
+
+  .question-card:hover { border-color: rgba(255,255,255,0.16); }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .q-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--teal);
+    background: rgba(20,150,127,0.15);
+    border: 1px solid rgba(20,150,127,0.35);
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+  }
+
+  .q-text {
+    font-size: 1.02rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.92);
+  }
+
+  /* ── TRUE/FALSE ── */
+  .tf-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  /* ── MULTIPLE CHOICE ── */
+  .mc-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.85);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0);
+    transition: background 0.2s;
+  }
+
+  .option-btn:not(:disabled):hover {
+    border-color: var(--teal);
+    background: rgba(20,150,127,0.1);
+    transform: translateX(4px);
+  }
+
+  .option-btn:not(:disabled):hover::before { background: rgba(20,150,127,0.05); }
+
+  .option-letter {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  /* TF specific */
+  .tf-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.2rem;
+    border-radius: 14px;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.85);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.03em;
+  }
+
+  .tf-btn .icon-big { font-size: 1.8rem; }
+
+  .tf-btn:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .tf-btn.verdadero:not(:disabled):hover { border-color: var(--green); background: rgba(45,198,83,0.12); }
+  .tf-btn.falso:not(:disabled):hover    { border-color: var(--red);   background: rgba(230,57,70,0.12); }
+
+  /* ── STATES after answer ── */
+  .option-btn:disabled, .tf-btn:disabled { cursor: default; transform: none !important; }
+
+  .option-btn.correct-ans, .tf-btn.correct-ans {
+    border-color: var(--green) !important;
+    background: rgba(45,198,83,0.15) !important;
+    color: #fff;
+  }
+  .option-btn.correct-ans .option-letter { background: var(--green); border-color: var(--green); color: #fff; }
+
+  .option-btn.wrong-ans, .tf-btn.wrong-ans {
+    border-color: var(--red) !important;
+    background: rgba(230,57,70,0.12) !important;
+    opacity: 0.7;
+  }
+
+  .option-btn.reveal-correct, .tf-btn.reveal-correct {
+    border-color: var(--green) !important;
+    background: rgba(45,198,83,0.1) !important;
+    animation: pulse-green 0.5s ease;
+  }
+
+  /* ── FEEDBACK ── */
+  .feedback {
+    display: none;
+    margin-top: 1rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .feedback.show { display: flex; gap: 0.6rem; align-items: flex-start; }
+  .feedback.fb-correct { background: rgba(45,198,83,0.12); border: 1px solid rgba(45,198,83,0.3); color: #a8f0b8; }
+  .feedback.fb-wrong   { background: rgba(230,57,70,0.1);  border: 1px solid rgba(230,57,70,0.25); color: #f5a0a6; }
+  .feedback .fb-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .feedback strong { color: var(--white); display: block; margin-bottom: 0.2rem; }
+
+  /* ── RESULTS PANEL ── */
+  #results {
+    display: none;
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    margin-top: 2rem;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .result-emoji { font-size: 4rem; margin-bottom: 1rem; display: block; }
+
+  #results h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    color: var(--white);
+    margin-bottom: 0.5rem;
+  }
+
+  #results p { color: var(--lgray); margin-bottom: 2rem; font-size: 1.05rem; }
+
+  .big-score {
+    font-family: 'DM Serif Display', serif;
+    font-size: 5rem;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .score-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--lgray); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin: 2rem 0;
+  }
+
+  .result-box {
+    padding: 1.2rem;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.05);
+  }
+  .result-box .rb-num { font-family: 'DM Serif Display', serif; font-size: 2rem; }
+  .result-box .rb-lbl { font-size: 0.75rem; color: var(--lgray); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .btn-retry {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, var(--blue), var(--teal));
+    color: white;
+    border: none;
+    padding: 0.9rem 2.2rem;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    margin-top: 1rem;
+  }
+
+  .btn-retry:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(19,104,170,0.4); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes pulse-green {
+    0%   { box-shadow: 0 0 0 0 rgba(45,198,83,0.5); }
+    70%  { box-shadow: 0 0 0 10px rgba(45,198,83,0); }
+    100% { box-shadow: 0 0 0 0 rgba(45,198,83,0); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+  }
+
+  .shake { animation: shake 0.35s ease; }
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    margin: 2.5rem 0 2rem;
+  }
+
+  /* ── NAME SCREEN ── */
+  #nameScreen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    animation: fadeDown 0.7s ease both;
+    text-align: center;
+  }
+
+  .name-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 500px;
+    backdrop-filter: blur(10px);
+  }
+
+  .name-card .avatar {
+    font-size: 3.5rem;
+    margin-bottom: 1.2rem;
+    display: block;
+  }
+
+  .name-card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.9rem;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+  }
+
+  .name-card p {
+    color: var(--lgray);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    font-weight: 300;
+  }
+
+  .name-input-wrap {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .name-input-wrap input {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border-radius: 14px;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.07);
+    color: var(--white);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  .name-input-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .name-input-wrap input:focus {
+    border-color: var(--teal);
+    background: rgba(20,150,127,0.08);
+  }
+
+  .btn-start {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, var(--blue), var(--teal));
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.03em;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .btn-start.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .btn-start.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(19,104,170,0.45);
+  }
+
+  .student-name-display {
+    display: none;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(20,150,127,0.12);
+    border: 1px solid rgba(20,150,127,0.3);
+    padding: 0.5rem 1.1rem;
+    border-radius: 99px;
+    font-size: 0.9rem;
+    color: var(--teal);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .student-name-display.show { display: inline-flex; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .tf-options { grid-template-columns: 1fr 1fr; }
+    .result-grid { grid-template-columns: 1fr; }
+    .question-card { padding: 1.4rem 1.2rem; }
+    .name-card { padding: 2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badge">Ingeniería Biomédica · 6to Cuatrimestre</div>
+    <h1>Quiz <em>Metrología</em><br>Biomédica</h1>
+    <p>Unidad II · 20 preguntas · Verdadero/Falso y Opción Múltiple</p>
+  </header>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap" style="display:none">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0 / 20</div>
+  </div>
+
+  <!-- SCORE STRIP -->
+  <div class="score-strip" id="scoreStripEl" style="display:none">
+    <div class="score-chip total">
+      <span class="num" id="scoreTotal">0</span>
+      <span class="lbl">Respondidas</span>
+    </div>
+    <div class="score-chip correct">
+      <span class="num" id="scoreCorrect">0</span>
+      <span class="lbl">Correctas</span>
+    </div>
+    <div class="score-chip wrong">
+      <span class="num" id="scoreWrong">0</span>
+      <span class="lbl">Incorrectas</span>
+    </div>
+  </div>
+
+  <!-- NAME SCREEN -->
+  <div id="nameScreen">
+    <div class="name-card">
+      <span class="avatar">🩺</span>
+      <h2>Bienvenido al Quiz</h2>
+      <p>Ingresa tu nombre antes de comenzar.<br>Aparecerá en tu resultado final.</p>
+      <div class="name-input-wrap">
+        <input type="text" id="nameInput" placeholder="Escribe tu nombre completo..." maxlength="60" autocomplete="off" />
+      </div>
+      <button class="btn-start" id="btnStart" onclick="startQuiz()">Comenzar Quiz →</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quizMain" style="display:none">
+    <div class="student-name-display show" id="studentNameDisplay">
+      <span>👤</span><span id="studentNameLabel"></span>
+    </div>
+    <div id="quizBody"></div>
+    <div id="results"></div>
+  </div>
+
+</div>
+
+<script>
+const questions = [
+  // ── SECCIÓN 1: VERDADERO / FALSO ──
+  {
+    section: "Verdadero o Falso",
+    sectionIcon: "🔵",
+    sectionColor: "#1368AA",
+    type: "tf",
+    q: "La metrología es la ciencia de las mediciones y sus aplicaciones, y garantiza la exactitud y confiabilidad de los resultados.",
+    answer: true,
+    explanation: "Correcto. La metrología se define exactamente así: ciencia de las mediciones, cuyo objetivo es garantizar exactitud y confiabilidad en los resultados."
+  },
+  {
+    type: "tf",
+    q: "El error de medición es la diferencia entre el valor medido y el valor máximo posible de la magnitud.",
+    answer: false,
+    explanation: "Falso. El error de medición es la diferencia entre el valor medido y el valor VERDADERO (o de referencia convencional), no el valor máximo."
+  },
+  {
+    type: "tf",
+    q: "La trazabilidad metrológica implica que el resultado de una medición se puede vincular a una referencia mediante una cadena ininterrumpida de comparaciones.",
+    answer: true,
+    explanation: "Correcto. La trazabilidad es precisamente esa cadena continua que conecta la medición hasta un patrón nacional o internacional."
+  },
+  {
+    type: "tf",
+    q: "Un sesgo en metrología se refiere a un error aleatorio que cambia de dirección en cada medición.",
+    answer: false,
+    explanation: "Falso. El sesgo es un error SISTEMÁTICO que se mantiene constante en la misma dirección. Los errores aleatorios son los que varían."
+  },
+  {
+    type: "tf",
+    q: "El CENAM es el organismo mexicano encargado de mantener los patrones nacionales de medición.",
+    answer: true,
+    explanation: "Correcto. El Centro Nacional de Metrología (CENAM) es el organismo en México que custodia los patrones nacionales de medición."
+  },
+  {
+    type: "tf",
+    q: "La repetibilidad evalúa si un instrumento entrega el mismo resultado cuando distintos operadores lo usan en distintos laboratorios.",
+    answer: false,
+    explanation: "Falso. Eso describe la REPRODUCIBILIDAD. La repetibilidad evalúa la consistencia bajo las MISMAS condiciones: mismo operador, mismo lugar, mismo instrumento."
+  },
+  {
+    type: "tf",
+    q: "Un analizador de desfibrilador puede medir la energía entregada en joules, la forma de onda y el tiempo de carga.",
+    answer: true,
+    explanation: "Correcto. El analizador de desfibrilador verifica precisamente esos parámetros críticos para asegurar la seguridad del paciente en cardioversiones."
+  },
+  {
+    type: "tf",
+    q: "La calibración de un equipo médico y su verificación son procesos completamente equivalentes e intercambiables.",
+    answer: false,
+    explanation: "Falso. La calibración establece la relación entre el instrumento y el patrón, ajustando si es necesario. La verificación solo CONFIRMA si el equipo cumple los requisitos, sin ajuste."
+  },
+  {
+    type: "tf",
+    q: "La linealidad de un instrumento se refiere a su capacidad para responder proporcionalmente al estímulo a lo largo de todo su rango de medición.",
+    answer: true,
+    explanation: "Correcto. Un instrumento con buena linealidad responde de forma proporcional en toda su escala. Ejemplo: una bomba de infusión precisa a 50 ml/h debe ser igualmente precisa a 5 ml/h."
+  },
+  {
+    type: "tf",
+    q: "La NOM-241-SSA1 en México regula exclusivamente la fabricación de medicamentos, no de dispositivos médicos.",
+    answer: false,
+    explanation: "Falso. La NOM-241-SSA1-2012 regula las Buenas Prácticas de Fabricación de DISPOSITIVOS MÉDICOS, no medicamentos."
+  },
+
+  // ── SECCIÓN 2: OPCIÓN MÚLTIPLE ──
+  {
+    section: "Opción Múltiple",
+    sectionIcon: "🟢",
+    sectionColor: "#14967F",
+    type: "mc",
+    q: "Un oxímetro de pulso marca consistentemente 99% de SpO₂ cuando el valor real del paciente es 94%. ¿Qué tipo de error describe esta situación?",
+    options: ["A. Error aleatorio", "B. Sesgo (error sistemático)", "C. Error de linealidad", "D. Error de reproducibilidad"],
+    answer: 1,
+    explanation: "Correcto: es un SESGO. El instrumento comete el mismo error sistemático en la misma dirección (siempre sobreestima), lo cual es característico del sesgo."
+  },
+  {
+    type: "mc",
+    q: "¿Cuál de los siguientes instrumentos es el más adecuado para verificar el volumen tidal, la frecuencia respiratoria y el PEEP de un ventilador mecánico en UCI?",
+    options: ["A. Multímetro de seguridad eléctrica", "B. Simulador de paciente ECG", "C. Analizador pulmonar / de ventilador", "D. Analizador de electrobisturí"],
+    answer: 2,
+    explanation: "Correcto: el ANALIZADOR DE VENTILADOR está diseñado específicamente para verificar parámetros de ventilación mecánica como Vt, FR, PEEP y FiO₂."
+  },
+  {
+    type: "mc",
+    q: "El BIPM (Oficina Internacional de Pesas y Medidas) tiene como función principal:",
+    options: ["A. Fabricar y vender equipos de medición hospitalaria", "B. Regular los dispositivos médicos en América Latina", "C. Coordinar el Sistema Internacional de Unidades (SI) a nivel mundial", "D. Emitir certificados de calibración en México"],
+    answer: 2,
+    explanation: "Correcto. El BIPM coordina el Sistema Internacional de Unidades (SI) a nivel global y es la máxima referencia metrológica internacional."
+  },
+  {
+    type: "mc",
+    q: "Durante la calibración de una bomba de infusión, se obtienen los siguientes caudales medidos: 49.8, 50.1, 49.9, 50.2, 50.0 ml/h (valor nominal: 50 ml/h). ¿Cuál es el error promedio?",
+    options: ["A. −0.2 ml/h", "B. 0.0 ml/h", "C. +0.4 ml/h", "D. +1.0 ml/h"],
+    answer: 1,
+    explanation: "Correcto. Promedio = (49.8+50.1+49.9+50.2+50.0)/5 = 250/5 = 50.0 ml/h. Error = 50.0 − 50.0 = 0.0 ml/h. ¡El equipo está bien calibrado en este punto!"
+  },
+  {
+    type: "mc",
+    q: "Un desfibrilador tiene como especificación de fábrica una tolerancia de ±10% en la energía entregada. Se mide 3 veces a 200 J y se obtienen: 198 J, 202 J, 195 J. ¿Cuál es la conclusión?",
+    options: ["A. No conforme: el rango supera ±10%", "B. Conforme: todos los valores están dentro de ±10% (180–220 J)", "C. Se necesitan más de 10 mediciones para decidir", "D. Conforme solo si se usa el promedio, que es mayor a 200 J"],
+    answer: 1,
+    explanation: "Correcto. La tolerancia de ±10% sobre 200 J da un rango de 180–220 J. Los tres valores (198, 202, 195) están dentro de ese rango, por lo que el equipo está CONFORME."
+  },
+  {
+    type: "mc",
+    q: "La norma IEC 60601-1 aplica a:",
+    options: ["A. Sistemas de gestión de calidad en hospitales (ISO 9001)", "B. Requisitos generales de seguridad básica para equipos médicos eléctricos", "C. Diagnóstico in vitro y trazabilidad metrológica en laboratorios", "D. Buenas prácticas de fabricación de dispositivos médicos en México"],
+    answer: 1,
+    explanation: "Correcto. La IEC 60601-1 establece los requisitos generales de SEGURIDAD BÁSICA y desempeño esencial para todos los equipos médicos eléctricos."
+  },
+  {
+    type: "mc",
+    q: "¿Cuál de las siguientes acciones corresponde al primer paso de un proceso formal de calibración?",
+    options: ["A. Calcular la incertidumbre de los resultados", "B. Comparar resultados con especificaciones del fabricante", "C. Elaborar el informe y certificado de calibración", "D. Planificar: definir equipo, patrón, condiciones y norma de referencia"],
+    answer: 3,
+    explanation: "Correcto. La planificación es siempre el PRIMER paso: definir qué equipo se calibra, qué instrumento patrón se usará, las condiciones ambientales y la norma aplicable."
+  },
+  {
+    type: "mc",
+    q: "Un técnico de ingeniería biomédica realiza 5 veces la misma medición de resistencia de aislamiento en un equipo médico y obtiene valores muy diferentes cada vez. Esto indica principalmente un problema de:",
+    options: ["A. Sesgo del instrumento", "B. Repetibilidad", "C. Linealidad", "D. Trazabilidad"],
+    answer: 1,
+    explanation: "Correcto. La variación en mediciones repetidas bajo las mismas condiciones indica un problema de REPETIBILIDAD: el instrumento no es consistente."
+  },
+  {
+    type: "mc",
+    q: "¿Cuál es la función del simulador de paciente (ECG) en el mantenimiento de un monitor multiparámetro?",
+    options: ["A. Medir directamente las señales cardíacas del paciente en tiempo real", "B. Generar señales patrón conocidas para verificar la respuesta del monitor", "C. Calibrar el sistema de alarmas de presión del monitor", "D. Sustituir al electrocardiograma clínico durante cirugía"],
+    answer: 1,
+    explanation: "Correcto. El simulador genera señales PATRÓN CONOCIDAS (FC, amplitud, SpO₂ simulada) para comprobar que el monitor las interpreta correctamente, sin necesitar un paciente real."
+  },
+  {
+    type: "mc",
+    q: "En un informe de calibración, la sección de 'interpretación y conclusiones' debe incluir obligatoriamente:",
+    options: [
+      "A. Solo el nombre del técnico y la fecha",
+      "B. Una comparativa de los resultados de desempeño contra las especificaciones técnicas del fabricante",
+      "C. El presupuesto del departamento de mantenimiento",
+      "D. La lista de refacciones adquiridas durante el mantenimiento preventivo"
+    ],
+    answer: 1,
+    explanation: "Correcto. Las conclusiones de un informe de calibración deben incluir la COMPARATIVA entre los resultados obtenidos y las especificaciones del fabricante, indicando conformidad o no conformidad."
+  }
+];
+
+// ── HELPERS ──
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── STATE ──
+let answered = 0, correct = 0, wrong = 0;
+let studentName = '';
+let shuffledQuestions = [];
+const total = questions.length;
+
+// ── NAME SCREEN ──
+document.getElementById('nameInput').addEventListener('input', function() {
+  const btn = document.getElementById('btnStart');
+  if (this.value.trim().length >= 2) {
+    btn.classList.add('active');
+  } else {
+    btn.classList.remove('active');
+  }
+});
+
+document.getElementById('nameInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && this.value.trim().length >= 2) startQuiz();
+});
+
+function startQuiz() {
+  studentName = document.getElementById('nameInput').value.trim();
+  if (studentName.length < 2) return;
+
+  document.getElementById('nameScreen').style.display = 'none';
+  document.getElementById('quizMain').style.display = 'block';
+  document.getElementById('studentNameLabel').textContent = studentName;
+  document.getElementById('progressWrap').style.display = 'flex';
+  document.getElementById('scoreStripEl').style.display = 'flex';
+
+  buildQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── BUILD UI ──
+function buildQuiz() {
+  const body = document.getElementById('quizBody');
+  body.innerHTML = '';
+
+  // Shuffle within each section separately, keeping sections together
+  const tfQuestions = shuffle(questions.filter(q => q.type === 'tf'));
+  const mcQuestions = shuffle(questions.filter(q => q.type === 'mc'));
+
+  // Restore section metadata on first of each group
+  tfQuestions[0] = { ...tfQuestions[0], section: "Verdadero o Falso", sectionIcon: "🔵", sectionColor: "#1368AA" };
+  mcQuestions[0] = { ...mcQuestions[0], section: "Opción Múltiple", sectionIcon: "🟢", sectionColor: "#14967F" };
+
+  shuffledQuestions = [...tfQuestions, ...mcQuestions];
+
+  let currentSection = '';
+
+  shuffledQuestions.forEach((q, idx) => {
+    // Section header
+    if (q.section && q.section !== currentSection) {
+      currentSection = q.section;
+      if (idx > 0) {
+        const div = document.createElement('div');
+        div.className = 'section-divider';
+        body.appendChild(div);
+      }
+      const sec = document.createElement('div');
+      sec.className = 'section-label';
+      sec.innerHTML = `
+        <div class="icon" style="background:${q.sectionColor}22; border:1px solid ${q.sectionColor}44;">${q.sectionIcon}</div>
+        <h2>${q.section}</h2>
+      `;
+      body.appendChild(sec);
+    }
+
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.style.animationDelay = (idx * 0.04) + 's';
+    card.id = 'card-' + idx;
+
+    card.innerHTML = `
+      <div class="q-header">
+        <span class="q-num">${String(idx + 1).padStart(2,'0')}</span>
+        <p class="q-text">${q.q}</p>
+      </div>
+      <div class="options-wrap" id="opts-${idx}"></div>
+      <div class="feedback" id="fb-${idx}"></div>
+    `;
+
+    const optsWrap = card.querySelector('#opts-' + idx);
+
+    if (q.type === 'tf') {
+      // Shuffle Verdadero/Falso order
+      const tfOrder = shuffle([
+        { label: 'Verdadero', val: true,  emoji: '✅' },
+        { label: 'Falso',     val: false, emoji: '❌' }
+      ]);
+      optsWrap.className = 'tf-options';
+      tfOrder.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'tf-btn ' + item.label.toLowerCase();
+        btn.innerHTML = `<span class="icon-big">${item.emoji}</span>${item.label}`;
+        btn.onclick = () => handleAnswer(idx, item.val, q.answer, btn, optsWrap, 'tf');
+        optsWrap.appendChild(btn);
+      });
+
+    } else {
+      // Shuffle MC options but track correct answer text
+      const correctText = q.options[q.answer].replace(/^[A-D]\.\s*/, '');
+      const allTexts = q.options.map(o => o.replace(/^[A-D]\.\s*/, ''));
+      const shuffledTexts = shuffle(allTexts);
+      const newCorrectIdx = shuffledTexts.indexOf(correctText);
+
+      optsWrap.className = 'mc-options';
+      const letters = ['A','B','C','D'];
+      shuffledTexts.forEach((text, oi) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span class="option-letter">${letters[oi]}</span>${text}`;
+        btn.onclick = () => handleAnswer(idx, oi, newCorrectIdx, btn, optsWrap, 'mc');
+        optsWrap.appendChild(btn);
+      });
+    }
+
+    body.appendChild(card);
+  });
+}
+
+function handleAnswer(qIdx, selected, correct_ans, clickedBtn, optsWrap, type) {
+  const allBtns = optsWrap.querySelectorAll('button');
+  const isCorrect = (type === 'tf') ? (selected === correct_ans) : (selected === correct_ans);
+  const fb = document.getElementById('fb-' + qIdx);
+
+  allBtns.forEach(b => b.disabled = true);
+  answered++;
+
+  if (isCorrect) {
+    correct++;
+    clickedBtn.classList.add('correct-ans');
+    fb.className = 'feedback fb-correct show';
+    fb.innerHTML = `<span class="fb-icon">✅</span><div><strong>¡Correcto!</strong> ${shuffledQuestions[qIdx].explanation}</div>`;
+  } else {
+    wrong++;
+    clickedBtn.classList.add('wrong-ans');
+    clickedBtn.classList.add('shake');
+    setTimeout(() => clickedBtn.classList.remove('shake'), 400);
+
+    if (type === 'tf') {
+      // Find which button has the correct value
+      Array.from(allBtns).forEach(b => {
+        const val = b.textContent.includes('Verdadero') ? true : false;
+        if (val === correct_ans) b.classList.add('reveal-correct');
+      });
+    } else {
+      allBtns[correct_ans].classList.add('reveal-correct');
+    }
+
+    fb.className = 'feedback fb-wrong show';
+    fb.innerHTML = `<span class="fb-icon">❌</span><div><strong>Incorrecto.</strong> ${shuffledQuestions[qIdx].explanation}</div>`;
+  }
+
+  updateScores();
+  if (answered === total) setTimeout(showResults, 800);
+}
+
+function updateScores() {
+  document.getElementById('scoreTotal').textContent = answered;
+  document.getElementById('scoreCorrect').textContent = correct;
+  document.getElementById('scoreWrong').textContent = wrong;
+  const pct = (answered / total) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = answered + ' / ' + total;
+}
+
+function showResults() {
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const pct = Math.round((correct / total) * 100);
+  let emoji = '🌟', msg = '¡Excelente dominio!', color = '#2DC653';
+  if (pct < 60)      { emoji = '📚'; msg = 'Necesitas repasar más';          color = '#E63946'; }
+  else if (pct < 75) { emoji = '👍'; msg = 'Buen intento, sigue practicando'; color = '#F5A623'; }
+  else if (pct < 90) { emoji = '🔬'; msg = '¡Muy buen trabajo!';              color = '#1368AA'; }
+
+  document.getElementById('results').innerHTML = `
+    <span class="result-emoji">${emoji}</span>
+    <div style="font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--lgray);margin-bottom:0.3rem;">
+      Resultado de <span style="color:var(--white);font-weight:600">${studentName}</span>
+    </div>
+    <div class="big-score" style="color:${color}">${pct}%</div>
+    <div class="score-label">Calificación final</div>
+    <h2 style="margin-top:1rem">${msg}</h2>
+    <p>${correct} de ${total} respuestas correctas</p>
+    <div class="result-grid">
+      <div class="result-box">
+        <div class="rb-num" style="color:#2DC653">${correct}</div>
+        <div class="rb-lbl">Correctas</div>
+      </div>
+      <div class="result-box">
+        <div class="rb-num" style="color:#E63946">${wrong}</div>
+        <div class="rb-lbl">Incorrectas</div>
+      </div>
+      <div class="result-box">
+        <div class="rb-num" style="color:#14967F">${pct}%</div>
+        <div class="rb-lbl">Acierto</div>
+      </div>
+    </div>
+    ${pct >= 75
+      ? `<p style="color:#a8f0b8;font-size:0.95rem">✅ Aprobado · Estás listo para el informe de validación</p>`
+      : `<p style="color:#f5a0a6;font-size:0.95rem">📖 Repasa los conceptos de error, calibración y organismos regulatorios</p>`
+    }
+    <button class="btn-retry" onclick="restartQuiz()">🔄 Intentar de nuevo</button>
+  `;
+}
+
+function restartQuiz() {
+  answered = 0; correct = 0; wrong = 0;
+  updateScores();
+  document.getElementById('results').style.display = 'none';
+  buildQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
